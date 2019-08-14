@@ -106,18 +106,25 @@ class Consumer
 
     private function commit(\RdKafka\Message $message, bool $success): void
     {
-        if (!$success && !is_null($this->config->getDlq())) {
-            $this->sendToDql($message);
-            $this->consumer->commit();
-            $this->commits = 0;
-            return;
-        }
+        try {
+            if (!$success && !is_null($this->config->getDlq())) {
+                $this->sendToDql($message);
+                $this->consumer->commit();
+                $this->commits = 0;
+                return;
+            }
 
-        $this->commits++;
-        if ($this->commits >= $this->config->getCommit()) {
-            $this->consumer->commit();
-            $this->commits = 0;
-            return;
+            $this->commits++;
+            if ($this->commits >= $this->config->getCommit()) {
+                $this->consumer->commit();
+                $this->commits = 0;
+                return;
+            }
+        } catch (\Throwable $throwable) {
+            $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
+            if ($throwable->getCode() != RD_KAFKA_RESP_ERR__NO_OFFSET){
+                throw $throwable;
+            }
         }
     }
 }
