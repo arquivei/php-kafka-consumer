@@ -2,9 +2,12 @@
 
 namespace Kafka\Consumer;
 
+use Kafka\Consumer\Dependencies\RdKafka\Config\KafkaConfig;
+use Kafka\Consumer\Dependencies\RdKafka\Config\KafkaSaslConfig;
+use Kafka\Consumer\Dependencies\RdKafka\Config\KafkaTopicConfig;
 use Kafka\Consumer\Log\Logger;
 use Kafka\Consumer\Entities\Config;
-use Kafka\Consumer\Exceptions\KafkaConsumerException;
+use Arquivei\Kafka\Exceptions\KafkaConsumerException;
 
 class Consumer
 {
@@ -49,25 +52,22 @@ class Consumer
 
     private function setConf(): \RdKafka\Conf
     {
-        $topicConf = new \RdKafka\TopicConf();
-        $topicConf->set('auto.offset.reset', 'smallest');
 
-        $conf = new \RdKafka\Conf();
-        $conf->set('enable.auto.commit', 'false');
-        $conf->set('compression.codec', 'gzip');
-        $conf->set('max.poll.interval.ms', '86400000');
-        $conf->set('group.id', $this->config->getGroupId());
-        $conf->set('bootstrap.servers', $this->config->getBroker());
-        $conf->set('security.protocol', $this->config->getSecurityProtocol());
-        $conf->setDefaultTopicConf($topicConf);
-
-        if ($this->config->isPlainText()) {
-            $conf->set('sasl.username', $this->config->getSasl()->getUsername());
-            $conf->set('sasl.password', $this->config->getSasl()->getPassword());
-            $conf->set('sasl.mechanisms', $this->config->getSasl()->getMechanisms());
+        $kafkaConfig = new KafkaConfig();
+        $kafkaConfig->setGroupId($this->config->getGroupId());
+        $kafkaConfig->setBroker($this->config->getBroker());
+        $kafkaConfig->setSecurityProtocol($this->config->getSecurityProtocol());
+        $kafkaConfig->setTopicConfig(new KafkaTopicConfig());
+        if ($kafkaConfig->isPlainText()) {
+            $kafkaConfig->setSaslConfig (
+                new KafkaSaslConfig(
+                    $this->config->getSasl()->getUsername(),
+                    $this->config->getSasl()->getPassword(),
+                    $this->config->getSasl()->getMechanisms()
+                )
+            );
         }
-
-        return $conf;
+        return $kafkaConfig->getKafkaExtensionInstance();
     }
 
     private function executeMessage(\RdKafka\Message $message): void

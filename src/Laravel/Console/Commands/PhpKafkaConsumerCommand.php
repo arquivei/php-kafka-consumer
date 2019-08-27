@@ -4,13 +4,16 @@ namespace Kafka\Consumer\Laravel\Console\Commands;
 
 use Illuminate\Console\Command;
 use Kafka\Consumer\Contracts\Consumer;
+use Kafka\Consumer\Dependencies\RdKafka\Config\KafkaConfig;
+use Kafka\Consumer\Dependencies\RdKafka\Config\KafkaSaslConfig;
+use Kafka\Consumer\Dependencies\RdKafka\Config\KafkaTopicConfig;
 use Kafka\Consumer\Exceptions\InvalidCommitException;
 use Kafka\Consumer\Exceptions\InvalidConsumerException;
 
 class PhpKafkaConsumerCommand extends Command
 {
     protected $signature = 'arquivei:php-kafka-consumer {--topic=*} {--consumer=} {--groupId=} {--commit=} {--dlq=} {--maxMessage=}';
-    protected $description = 'A consumer of Kafka in PHP';
+    protected $description = 'A Kafka Worker in PHP';
 
     private $dlq;
     private $topics;
@@ -53,6 +56,26 @@ class PhpKafkaConsumerCommand extends Command
         );
 
         (new \Kafka\Consumer\Consumer($config))->consume();
+    }
+
+    private function setConf(): \RdKafka\Conf
+    {
+
+        $kafkaConfig = new KafkaConfig();
+        $kafkaConfig->setGroupId($this->config->getGroupId());
+        $kafkaConfig->setBroker($this->config->getBroker());
+        $kafkaConfig->setSecurityProtocol($this->config->getSecurityProtocol());
+        $kafkaConfig->setTopicConfig(new KafkaTopicConfig());
+        if ($kafkaConfig->isPlainText()) {
+            $kafkaConfig->setSaslConfig (
+                new KafkaSaslConfig(
+                    $this->config->getSasl()->getUsername(),
+                    $this->config->getSasl()->getPassword(),
+                    $this->config->getSasl()->getMechanisms()
+                )
+            );
+        }
+        return $kafkaConfig->getKafkaExtensionInstance();
     }
 
     private function getTopics(): array

@@ -1,13 +1,13 @@
 <?php
 
-namespace Kafka\Consumer\Exceptions;
+namespace Arquivei\Kafka\Exceptions;
 
 use Throwable;
 
 class KafkaConsumerException extends \Exception
 {
     public function __construct(
-        string $message = 'Error in consume kafka topic',
+        string $message = 'Error while consuming kafka topic',
         int $code = 0,
         Throwable $previous = null
     ) {

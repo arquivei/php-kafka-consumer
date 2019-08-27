@@ -18,7 +18,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kafka\\Consumer\\": "src/"
+      "Arquivei\\Kafka\\": "src/"
     }
   },
   "autoload-dev": {
