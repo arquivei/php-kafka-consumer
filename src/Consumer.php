@@ -13,6 +13,7 @@ class Consumer
     private $commits;
     private $consumer;
     private $producer;
+    private $messageNumber = 0;
 
     public function __construct(Config $config)
     {
@@ -27,10 +28,11 @@ class Consumer
         $this->consumer->subscribe([$this->config->getTopic()]);
 
         $this->commits = 0;
-        while (true) {
+        do {
             $message = $this->consumer->consume(500);
             switch ($message->err) {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
+                    $this->messageNumber++;
                     $this->executeMessage($message);
                     break;
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
@@ -42,7 +44,8 @@ class Consumer
                     throw new KafkaConsumerException($message->errstr());
                     break;
             }
-        }
+        } while (!$this->isMaxMessage());
+
     }
 
     private function setConf(): \RdKafka\Conf
@@ -83,27 +86,6 @@ class Consumer
         } while (!$success);
     }
 
-    private function isMaxAttemptReached(\RdKafka\Message $message, int $attempts): bool
-    {
-        if (
-            $this->config->getMaxAttempts()->hasMaxAttempts() &&
-            $this->config->getMaxAttempts()->hasReachedMaxAttempts($attempts)
-        ) {
-            $this->commit($message, false);
-            return true;
-        }
-
-        $this->config->getSleep()->waiting();
-
-        return false;
-    }
-
-    private function sendToDql(\RdKafka\Message $message): void
-    {
-        $topic = $this->producer->newTopic($this->config->getDlq());
-        $topic->produce(RD_KAFKA_PARTITION_UA, 0, $message->payload);
-    }
-
     private function commit(\RdKafka\Message $message, bool $success): void
     {
         try {
@@ -122,9 +104,35 @@ class Consumer
             }
         } catch (\Throwable $throwable) {
             $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
-            if ($throwable->getCode() != RD_KAFKA_RESP_ERR__NO_OFFSET){
+            if ($throwable->getCode() != RD_KAFKA_RESP_ERR__NO_OFFSET) {
                 throw $throwable;
             }
         }
+    }
+
+    private function sendToDql(\RdKafka\Message $message): void
+    {
+        $topic = $this->producer->newTopic($this->config->getDlq());
+        $topic->produce(RD_KAFKA_PARTITION_UA, 0, $message->payload);
+    }
+
+    private function isMaxAttemptReached(\RdKafka\Message $message, int $attempts): bool
+    {
+        if (
+            $this->config->getMaxAttempts()->hasMaxAttempts() &&
+            $this->config->getMaxAttempts()->hasReachedMaxAttempts($attempts)
+        ) {
+            $this->commit($message, false);
+            return true;
+        }
+
+        $this->config->getSleep()->waiting();
+
+        return false;
+    }
+
+    private function isMaxMessage(): bool
+    {
+        return $this->messageNumber == $this->config->getMaxMessages();
     }
 }
