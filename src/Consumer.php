@@ -76,7 +76,7 @@ class Consumer
             try {
                 $this->config->getConsumer()->handle($message->payload);
                 $success = true;
-                $this->commit($message, true);
+                $this->commit($message, $attempts, true);
             } catch (\Throwable $exception) {
                 $this->logger->error($message->offset, $attempts, $exception);
 
@@ -86,7 +86,7 @@ class Consumer
         } while (!$success);
     }
 
-    private function commit(\RdKafka\Message $message, bool $success): void
+    private function commit(\RdKafka\Message $message, int $attempts, bool $success): void
     {
         try {
             if (!$success && !is_null($this->config->getDlq())) {
@@ -103,7 +103,8 @@ class Consumer
                 return;
             }
         } catch (\Throwable $throwable) {
-            $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
+            $offset = property_exists($message, 'offset') ? $message->offset : null;
+            $this->logger->error($offset, $attempts, $throwable);
             if ($throwable->getCode() != RD_KAFKA_RESP_ERR__NO_OFFSET) {
                 throw $throwable;
             }
@@ -122,7 +123,7 @@ class Consumer
             $this->config->getMaxAttempts()->hasMaxAttempts() &&
             $this->config->getMaxAttempts()->hasReachedMaxAttempts($attempts)
         ) {
-            $this->commit($message, false);
+            $this->commit($message, $attempts, false);
             return true;
         }
 
