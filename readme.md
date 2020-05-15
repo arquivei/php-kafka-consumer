@@ -1,100 +1,39 @@
-# PHP KAFKA CONSUMER
+# DEPRECATED
 
-A consumer of Kafka in PHP
+This project will be deprecated, and we encourage you to see the news below
 
-## Install
+# New Projects
 
-1. Install [librdkafka c library](https://github.com/edenhill/librdkafka)
+## [php-kafka](https://github.com/arquivei/php-kafka)
 
-    ```bash
-    $ cd /tmp
-    $ mkdir librdkafka
-    $ cd librdkafka
-    $ curl -L https://github.com/edenhill/librdkafka/archive/v1.0.0.tar.gz | tar xz
-    $ cd librdkafka-1.0.0
-    $ ./configure
-    $ make
-    $ make install
-    ```
+[php-kafka](https://github.com/arquivei/php-kafka) intent is to providing a full support as kafka client.
 
-2. Install the [php-rdkafka](https://github.com/arnaud-lb/php-rdkafka) PECL extension
++ PHP 7.4
 
-    ```bash
-    $ pecl install rdkafka
-    ```
+Features:
 
-3. Add the following to your php.ini file to enable the php-rdkafka extension
++ Simple configuration setup;
++ Kafka Consumer;
++ Kafka Producer;
++ Handling errors and Topic DLQ support;
 
-    `extension=rdkafka.so`
+## [php-kafka-laravel](https://github.com/arquivei/php-kafka-laravel)
 
-4. Install this package via composer using:
+[php-kafka-laravel](https://github.com/arquivei/php-kafka-laravel) intent is providing Laravel support wrapping `php-kafka.
 
-    `composer require arquivei/php-kafka-consumer`
-    
-## Usage 
++ Laravel 7.x
 
-```php
-<?php
+Features:
 
-require_once 'vendor/autoload.php';
++ Simple configuration setup;
++ Service provider setup;
++ Laravel Command for consumers.
 
-use Kafka\Consumer\Entities\Config;
-use Kafka\Consumer\Contracts\Consumer;
-use Kafka\Consumer\Entities\Config\Sasl;
-use Kafka\Consumer\Entities\Config\MaxAttempt;
 
-class DefaultConsumer extends Consumer
-{
-    public function handle(string $message): void
-    {
-        print 'Init: ' . date('Y-m-d H:i:s') . PHP_EOL;
-        sleep(2);
-        print 'Finish: ' . date('Y-m-d H:i:s') . PHP_EOL;
-    }
-}
+# Current releases are no longer maintaining.
 
-$config = new Config(
-    new Sasl('username', 'pasword', 'mechanisms'),
-    'topic',
-    'broker:port',
-    1,
-    'php-kafka-consumer-group-id',
-    new DefaultConsumer(),
-    new MaxAttempt(1),
-    'security-protocol'
-);
+# Old Releases
 
-(new \Kafka\Consumer\Consumer($config))->consume();
++ [1.4.3](https://github.com/arquivei/php-kafka-consumer/tree/1.4.3)
++ [2.1.0](https://github.com/arquivei/php-kafka-consumer/tree/2.1.0)
 
-```
-
-## Usage with Laravel
-
-You need to add the `php-kafka-consig.php` in `config` path:
-
-```php
-<?php
-
-return [
-    'topic' => 'topic',
-    'broker' => 'broker',
-    'groupId' => 'group-id',
-    'securityProtocol' => 'security-protocol',
-    'sasl' => [
-        'mechanisms' => 'mechanisms',
-        'username' => 'username',
-        'password' => 'password',
-    ],
-];
-
-```
-
-Use the command to execute the consumer:
-
-```bash
-$ php artisan arquivei:php-kafka-consumer --consumer="App\Consumers\YourConsumer" --commit=1
-```
-
-## TODO
-
-- Add unit tests
