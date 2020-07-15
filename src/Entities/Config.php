@@ -16,6 +16,7 @@ class Config
     private $consumer;
     private $maxMessages;
     private $securityProtocol;
+    private $maxCommitRetries;
 
     public function __construct(
         Sasl $sasl,
@@ -26,7 +27,8 @@ class Config
         Consumer $consumer,
         string $securityProtocol,
         ?string $dlq,
-        int $maxMessages = -1
+        int $maxMessages = -1,
+        int $maxCommitRetries = 6
     ) {
         $this->dlq = $dlq;
         $this->sasl = $sasl;
@@ -37,6 +39,7 @@ class Config
         $this->consumer = $consumer;
         $this->maxMessages = $maxMessages;
         $this->securityProtocol = $securityProtocol;
+        $this->maxCommitRetries = $maxCommitRetries;
     }
 
     public function getSasl(): Sasl
@@ -87,5 +90,10 @@ class Config
     public function getMaxMessages(): int
     {
         return $this->maxMessages;
+    }
+
+    public function getMaxCommitRetries(): int
+    {
+        return $this->maxCommitRetries;
     }
 }
