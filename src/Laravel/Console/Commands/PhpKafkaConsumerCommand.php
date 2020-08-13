@@ -74,4 +74,3 @@ class PhpKafkaConsumerCommand extends Command
         return (is_string($this->dlq) && strlen($this->dlq) > 1) ? $this->dlq : null;
     }
 }
-
