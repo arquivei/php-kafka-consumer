@@ -10,7 +10,7 @@ use Kafka\Consumer\Exceptions\InvalidConsumerException;
 class PhpKafkaConsumerCommand extends Command
 {
     protected $signature = 'arquivei:php-kafka-consumer {--topic=*} {--consumer=} {--groupId=} {--commit=} {--dlq=} {--maxMessage=}';
-    protected $description = 'A consumer of Kafka in PHP';
+    protected $description = 'An Apache Kafka consumer in PHP';
 
     private $dlq;
     private $topics;
