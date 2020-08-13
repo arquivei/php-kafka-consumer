@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Kafka\Consumer\Contracts\Consumer;
 use Kafka\Consumer\Exceptions\InvalidCommitException;
 use Kafka\Consumer\Exceptions\InvalidConsumerException;
+use Kafka\Consumer\Validators\Commands\PhpKafkaConsumer\Validator;
 
 class PhpKafkaConsumerCommand extends Command
 {
@@ -26,10 +27,8 @@ class PhpKafkaConsumerCommand extends Command
 
     public function handle()
     {
+        (new Validator())->validateOptions($this->options);
         $consumer = $this->option('consumer');
-        $commit = $this->option('commit');
-        $this->validateConsumer($consumer);
-        $this->validateCommit($commit);
 
         $this->dlq = $this->option('dlq');
         $this->topics = $this->option('topic');
@@ -44,7 +43,7 @@ class PhpKafkaConsumerCommand extends Command
             ),
             $this->getTopics(),
             $this->config['broker'],
-            $commit,
+            $this->option('commit'),
             $this->getGroupId(),
             new $consumer(),
             $this->config['securityProtocol'],
@@ -73,20 +72,6 @@ class PhpKafkaConsumerCommand extends Command
     private function getDlq(): ?string
     {
         return (is_string($this->dlq) && strlen($this->dlq) > 1) ? $this->dlq : null;
-    }
-
-    private function validateCommit(?int $commit): void
-    {
-        if (is_null($commit) || $commit < 1) {
-            throw new InvalidCommitException();
-        }
-    }
-
-    private function validateConsumer(?string $consumer): void
-    {
-        if (! class_exists($consumer) || !is_subclass_of($consumer, Consumer::class)) {
-            throw new InvalidConsumerException();
-        }
     }
 }
 
