@@ -27,6 +27,15 @@
       "Kafka\\Consumer\\Tests\\": "tests/"
     }
   },
+  "archive": {
+        "exclude": [
+          "Dockerfile",
+          "Makefile",
+          "docker-compose.yaml",
+          ".env.dist",
+          "php.ini",
+        ]
+  },
   "config": {
     "preferred-install": "dist",
     "sort-packages": true,

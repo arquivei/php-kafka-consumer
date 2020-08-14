@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+
+  php-fpm:
+    build: .
+    container_name: php-kafka-consumer-php-fpm
+    working_dir: /application
+    entrypoint: tail -f /dev/null
+    volumes:
+      - .:/application

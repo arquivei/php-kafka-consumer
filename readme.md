@@ -1,6 +1,6 @@
-# PHP KAFKA CONSUMER
+# php-kafka-consumer
 
-A consumer of Kafka in PHP
+An Apache Kafka consumer in PHP
 
 ## Install
 
@@ -30,8 +30,8 @@ A consumer of Kafka in PHP
 4. Install this package via composer using:
 
     `composer require arquivei/php-kafka-consumer`
-    
-## Usage 
+
+## Usage
 
 ```php
 <?php
@@ -95,6 +95,38 @@ Use the command to execute the consumer:
 $ php artisan arquivei:php-kafka-consumer --consumer="App\Consumers\YourConsumer" --commit=1
 ```
 
-## TODO
+## Build and test
 
-- Add unit tests
+If you want to contribute, there's a few utilities that will help.
+
+First create a container:
+
+`docker-composer up -d --build`
+
+If you have make, you can use pre defined commands in the Makefile
+
+`make build`
+
+Then install the dependencies:
+
+`docker-compose exec php-fpm composer install`
+
+or with make:
+
+`make composer install`
+
+You can run tests locally:
+
+`docker-compose exec php-fpm ./vendor/phpunit/phpunit/phpunit tests`
+
+or with make:
+
+`make test`
+
+and check for coverage:
+
+`docker-compose exec php-fpm phpdbg -qrr ./vendor/bin/phpunit --whitelist src/ --coverage-html coverage/`
+
+or with make:
+
+`make coverage`
