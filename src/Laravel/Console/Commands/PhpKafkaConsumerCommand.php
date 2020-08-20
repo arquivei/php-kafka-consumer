@@ -28,8 +28,8 @@ class PhpKafkaConsumerCommand extends Command
 
     public function handle()
     {
-        (new Validator())->validateOptions($this->options);
-        $options = new Options($this->options);
+        (new Validator())->validateOptions($this->options());
+        $options = new Options($this->options());
 
         $consumer = $options->getConsumer();
         $config = new \Kafka\Consumer\Entities\Config(
