@@ -9,7 +9,7 @@
   "license": "MIT",
   "type": "project",
   "require": {
-    "php": "^7.1.3",
+    "php": "~7.1",
     "monolog/monolog": "^1.24",
     "illuminate/console": "5.*",
     "ext-rdkafka": "*"
@@ -29,11 +29,10 @@
   },
   "archive": {
         "exclude": [
-          "Dockerfile",
-          "Makefile",
+          "dev/*",
+          "Dockefile",
           "docker-compose.yaml",
-          ".env.dist",
-          "php.ini",
+          "Makefile"
         ]
   },
   "config": {

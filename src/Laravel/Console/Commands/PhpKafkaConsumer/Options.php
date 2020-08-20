@@ -13,6 +13,10 @@ class Options
 
     public function __construct(array $options)
     {
+        if (is_string($options['topic'])) {
+            $options['topic'] = [$options['topic']];
+        }
+
         $this->topics = $options['topic'];
         $this->consumer = $options['consumer'];
         $this->groupId = $options['groupId'];

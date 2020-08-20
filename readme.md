@@ -97,7 +97,7 @@ $ php artisan arquivei:php-kafka-consumer --consumer="App\Consumers\YourConsumer
 
 ## Build and test
 
-If you want to contribute, there's a few utilities that will help.
+If you want to contribute, there are a few utilities that will help.
 
 First create a container:
 
