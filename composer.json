@@ -9,7 +9,7 @@
   "license": "MIT",
   "type": "project",
   "require": {
-    "php": "^7.1.3",
+    "php": "~7.1",
     "monolog/monolog": "^1.24",
     "illuminate/console": "5.*",
     "ext-rdkafka": "*"
@@ -26,6 +26,14 @@
     "psr-4": {
       "Kafka\\Consumer\\Tests\\": "tests/"
     }
+  },
+  "archive": {
+        "exclude": [
+          "dev/*",
+          "Dockefile",
+          "docker-compose.yaml",
+          "Makefile"
+        ]
   },
   "config": {
     "preferred-install": "dist",
