@@ -10,7 +10,7 @@
   "type": "project",
   "require": {
     "php": "~7.1",
-    "monolog/monolog": "^1.24",
+    "monolog/monolog": "^1.24 || ^2.1",
     "illuminate/console": "5.* || ^7.0 || ^8.0",
     "ext-rdkafka": "*"
   },
