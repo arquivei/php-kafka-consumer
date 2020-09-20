@@ -2,9 +2,6 @@
 
 namespace Kafka\Consumer\Tests\Integration\Laravel\Console\Commands;
 
-use Arquivei\Events\Sender\Exporters\Kafka;
-use Arquivei\Events\Sender\Schemas\LatestSchema;
-use Arquivei\Events\Sender\Sender;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArgvInput;
 
@@ -14,7 +11,7 @@ class PhpKafkaConsumerTest extends TestCase
     private $input;
     private $kernel;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $app = new \Illuminate\Foundation\Application(
             '/application/laravel-test'
@@ -50,7 +47,7 @@ class PhpKafkaConsumerTest extends TestCase
         $rdKafkaConf->set('sasl.mechanisms', 'PLAIN');
 
         $producer = new \RdKafka\Producer($rdKafkaConf);
-        $producer->addBrokers('kafka:9092');
+        $producer->addBrokers(env('KAFKA_BROKERS'));
 
         $topic = $producer->newTopic('php-kafka-consumer-topic');
         $topic->produce(RD_KAFKA_PARTITION_UA, 0, 'What a lovely day!');
