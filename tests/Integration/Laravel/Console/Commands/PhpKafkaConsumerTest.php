@@ -17,8 +17,6 @@ class PhpKafkaConsumerTest extends TestCase
             '/application/laravel-test'
         );
 
-        \Dotenv\Dotenv::create($app->environmentPath(), $app->environmentFile())->safeLoad();
-
         $app->singleton(
             \Illuminate\Contracts\Http\Kernel::class,
             \App\Http\Kernel::class
