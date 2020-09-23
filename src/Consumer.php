@@ -63,10 +63,8 @@ class Consumer
 
     private function setConf(): Conf
     {
-        $topicConf = new TopicConf();
-        $topicConf->set('auto.offset.reset', 'smallest');
-
         $conf = new Conf();
+        $conf->set('auto.offset.reset', 'smallest');
         $conf->set('queued.max.messages.kbytes', '10000');
         $conf->set('enable.auto.commit', 'false');
         $conf->set('compression.codec', 'gzip');
@@ -74,7 +72,6 @@ class Consumer
         $conf->set('group.id', $this->config->getGroupId());
         $conf->set('bootstrap.servers', $this->config->getBroker());
         $conf->set('security.protocol', $this->config->getSecurityProtocol());
-        $conf->setDefaultTopicConf($topicConf);
 
         if ($this->config->isPlainText()) {
             $conf->set('sasl.username', $this->config->getSasl()->getUsername());
@@ -153,7 +150,7 @@ class Consumer
 
     private function handleMessage(Message $message): void
     {
-        if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err)  {
+        if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err) {
             $this->messageCounter->add();
             $this->executeMessage($message);
             return;

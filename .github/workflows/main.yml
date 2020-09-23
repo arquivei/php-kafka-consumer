@@ -1,0 +1,224 @@
+name: Version test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  run-test-1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 1
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-1
+
+  run-test-2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 2
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-2
+
+  run-test-3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 3
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-3
+
+  run-test-4:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 4
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-4
+
+  run-test-5:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 5
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-5
+
+  run-test-6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 6
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-6
+
+  run-test-7:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 7
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-7
+
+  run-test-8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 8
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-8
+
+  run-test-9:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 9
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-9
+
+  run-test-10:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 10
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-10
+
+  run-test-11:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 11
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-11
+
+  run-test-12:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 12
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-12
+
+  run-test-13:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 13
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-13
+
+  run-test-14:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 14
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-14
+
+  run-test-15:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 15
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-15
+
+  run-test-16:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 16
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-16
+
+  run-test-17:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 17
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-17
+
+  run-test-18:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 18
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-18
+
+  run-test-19:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 19
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-19
+
+  run-test-20:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 20
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-20
+
+  run-test-21:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 21
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-21
+
+  run-test-22:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 22
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-22
+
+  run-test-23:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 23
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-23
+
+  run-test-24:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test 24
+        run: |
+          mv build/docker-compose-files/* .
+          make version-test-24
