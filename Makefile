@@ -37,12 +37,6 @@ unit-coverage:
 integration-coverage:
 	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/php-kafka-consumer/src --coverage-html /application/php-kafka-consumer/coverage --filter Integration
 
-version-test-build:
-	@docker-compose -f docker-compose-test.yaml up -d --build
-
-version-test-up:
-	@docker-compose -f docker-compose-test.yaml up -d
-
 version-test-1:
 	@docker-compose -f docker-compose-test-1.yaml up -d
 	@docker-compose -f docker-compose-test-1.yaml exec -T test-1 ./vendor/phpunit/phpunit/phpunit tests
