@@ -34,10 +34,12 @@ services:
       - app-tier
   laravel:
     build:
-      context: ../
-      dockerfile: ./dev/Dockerfile
+      context: .
+      dockerfile: dev/Dockerfile
     entrypoint: tail -f /dev/null
+    environment:
+      KAFKA_BROKERS: kafka:9092
     volumes:
-      - ../:/application/php-kafka-consumer
+      - .:/application/php-kafka-consumer
     networks:
       - app-tier
