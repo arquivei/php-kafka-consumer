@@ -20,13 +20,13 @@ laravel:
 	@docker-compose exec laravel bash
 
 test:
-	@docker-compose exec laravel ./vendor/phpunit/phpunit/phpunit tests
+	@docker-compose exec -T laravel ./vendor/phpunit/phpunit/phpunit tests
 
-unit-tests:
-	@docker-compose exec laravel ./vendor/phpunit/phpunit/phpunit tests --filter Unit
+unit-tests: up
+	@docker-compose exec -T laravel ./vendor/phpunit/phpunit/phpunit tests --filter Unit
 
-integration-tests:
-	@docker-compose exec laravel ./vendor/phpunit/phpunit/phpunit tests --filter Integration
+integration-tests: up
+	@docker-compose exec -T laravel ./vendor/phpunit/phpunit/phpunit tests --filter Integration
 
 coverage:
 	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/php-kafka-consumer/src --coverage-html /application/php-kafka-consumer/coverage
