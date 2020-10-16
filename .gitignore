@@ -3,5 +3,4 @@ vendor/
 composer.lock
 .env
 coverage/
-phpunit.xml
 laravel-test/

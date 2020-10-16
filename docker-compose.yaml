@@ -41,5 +41,6 @@ services:
       KAFKA_BROKERS: kafka:9092
     volumes:
       - .:/application/php-kafka-consumer
+      - ./tests:/application/laravel-test/tests
     networks:
       - app-tier
