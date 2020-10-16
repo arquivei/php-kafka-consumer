@@ -19,8 +19,8 @@ tail:
 laravel:
 	@docker-compose exec laravel bash
 
-test:
-	@docker-compose exec -T laravel ./vendor/phpunit/phpunit/phpunit tests
+test: up
+	@docker-compose exec -T laravel ./vendor/phpunit/phpunit/phpunit tests -c phpunit.xml
 
 unit-tests: up
 	@docker-compose exec -T laravel ./vendor/phpunit/phpunit/phpunit tests --filter Unit
@@ -28,7 +28,7 @@ unit-tests: up
 integration-tests: up
 	@docker-compose exec -T laravel ./vendor/phpunit/phpunit/phpunit tests --filter Integration
 
-coverage:
+coverage: up
 	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/php-kafka-consumer/src --coverage-html /application/php-kafka-consumer/coverage
 
 unit-coverage:

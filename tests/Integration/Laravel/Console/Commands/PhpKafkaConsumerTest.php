@@ -2,6 +2,8 @@
 
 namespace Kafka\Consumer\Tests\Integration\Laravel\Console\Commands;
 
+use Kafka\Consumer\Exceptions\InvalidCommitException;
+use Kafka\Consumer\Exceptions\InvalidConsumerException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArgvInput;
 
@@ -54,6 +56,19 @@ class PhpKafkaConsumerTest extends TestCase
         $msg = TestConsumer::$message;
         $this->assertSame($msg, 'What a lovely day!');
     }
+
+    public function testInvalidCommit()
+    {
+        $this->expectException(InvalidCommitException::class);
+        $this->kernel->call('arquivei:php-kafka-consumer', ['--topic' => 'php-kafka-consumer-topic', '--consumer' => TestConsumer::class, '--groupId' => 'test-group-id', '--commit' => '-20', '--dlq' => 'php-kafka-consumer-topic-dlq', '--maxMessage' => 1,]);
+    }
+
+    public function testInvalidConsumer()
+    {
+        $this->expectException(InvalidConsumerException::class);
+        $this->kernel->call('arquivei:php-kafka-consumer', ['--topic' => 'php-kafka-consumer-topic', '--consumer' => 'not-a-consuer', '--groupId' => 'test-group-id', '--commit' => '1', '--dlq' => 'php-kafka-consumer-topic-dlq', '--maxMessage' => 1,]);
+    }
+
 
     public function tearDown(): void
     {
