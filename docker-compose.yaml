@@ -3,7 +3,7 @@ networks:
   app-tier:
     driver: bridge
 services:
-  zookeeper:
+  zookeeper-test:
     image: 'bitnami/zookeeper:latest'
     networks:
       - app-tier
@@ -11,7 +11,7 @@ services:
       - '2181:2181'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-  kafka:
+  kafka-test:
     image: 'bitnami/kafka:latest'
     ports:
       - '9092:9092'
@@ -20,25 +20,25 @@ services:
       - KAFKA_BROKER_ID=1
       - KAFKA_LISTENERS=CLIENT://:9092
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka:9092
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-test:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper-test:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka-test:9092,EXTERNAL://localhost:9093
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
-      - zookeeper
+      - zookeeper-test
     networks:
       - app-tier
   laravel:
     build:
       context: .
       dockerfile: dev/Dockerfile
-    entrypoint: tail -f /dev/null
+    entrypoint: /application/php-kafka-consumer/start.sh
     environment:
-      KAFKA_BROKERS: kafka:9092
+      KAFKA_BROKERS: kafka-test:9092
     volumes:
       - .:/application/php-kafka-consumer
       - ./tests:/application/laravel-test/tests

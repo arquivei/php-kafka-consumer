@@ -69,7 +69,6 @@ class PhpKafkaConsumerTest extends TestCase
         $this->kernel->call('arquivei:php-kafka-consumer', ['--topic' => 'php-kafka-consumer-topic', '--consumer' => 'not-a-consuer', '--groupId' => 'test-group-id', '--commit' => '1', '--dlq' => 'php-kafka-consumer-topic-dlq', '--maxMessage' => 1,]);
     }
 
-
     public function tearDown(): void
     {
         $this->kernel->terminate($this->input, $this->status);
