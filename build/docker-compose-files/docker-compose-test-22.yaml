@@ -38,7 +38,7 @@ services:
     build:
       context: .
       dockerfile: build/test/Dockerfile:php7.4-v1.5.0-4.0.3-6
-    entrypoint: tail -f /dev/null
+    entrypoint: /application/php-kafka-consumer/start.sh
     networks:
       - app-test
     environment:

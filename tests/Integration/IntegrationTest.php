@@ -9,7 +9,7 @@ class IntegrationTest extends TestCase
 {
     public function testSuccess()
     {
-        $topicName = 'php-kafka-consumer-topic-success-test';
+        $topicName = 'php-kafka-consumer-topic';
         $this->sendMessage($topicName, 'Groundhog day');
 
         $config = new \Kafka\Consumer\Entities\Config(
@@ -37,7 +37,7 @@ class IntegrationTest extends TestCase
 
     public function testDlq()
     {
-        $topicName = 'php-kafka-consumer-topic-dlq-test';
+        $topicName = 'php-kafka-consumer-topic';
         $this->sendMessage($topicName, 'Cest la vie');
 
         $config = new \Kafka\Consumer\Entities\Config(
@@ -64,7 +64,7 @@ class IntegrationTest extends TestCase
 
     public function testMultipleMessages()
     {
-        $topicName = 'php-kafka-consumer-topic-multi-test';
+        $topicName = 'php-kafka-consumer-topic';
         $this->sendMessage($topicName, 'You are my fire');
         $this->sendMessage($topicName, 'The one desire');
         $this->sendMessage($topicName, 'Believe when I say');
@@ -103,11 +103,16 @@ class IntegrationTest extends TestCase
         $rdKafkaConf->set('debug', 'all');
         $rdKafkaConf->set('security.protocol', 'PLAINTEXT');
         $rdKafkaConf->set('sasl.mechanisms', 'PLAIN');
+        $rdKafkaConf->set('bootstrap.servers', env('KAFKA_BROKERS'));
 
         $producer = new \RdKafka\Producer($rdKafkaConf);
         $producer->addBrokers(env('KAFKA_BROKERS'));
 
         $topic = $producer->newTopic($topicName);
         $topic->produce(RD_KAFKA_PARTITION_UA, 0, $msg);
+
+        if (method_exists($producer, 'flush')) {
+            $producer->flush(12000);
+        }
     }
 }

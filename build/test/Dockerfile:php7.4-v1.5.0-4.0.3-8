@@ -22,6 +22,10 @@ COPY tests /application/php-kafka-consumer/tests/
 
 COPY composer.json /application/php-kafka-consumer/composer.json
 
+COPY start.sh /application/php-kafka-consumer/
+
+COPY wait-for-it.sh /application/php-kafka-consumer/
+
 RUN cd /application/php-kafka-consumer && composer update
 
 RUN cd /application/laravel-test && composer update
