@@ -66,7 +66,7 @@ class PhpKafkaConsumerTest extends TestCase
     public function testInvalidConsumer()
     {
         $this->expectException(InvalidConsumerException::class);
-        $this->kernel->call('arquivei:php-kafka-consumer', ['--topic' => 'php-kafka-consumer-topic', '--consumer' => 'not-a-consuer', '--groupId' => 'test-group-id', '--commit' => '1', '--dlq' => 'php-kafka-consumer-topic-dlq', '--maxMessage' => 1,]);
+        $this->kernel->call('arquivei:php-kafka-consumer', ['--topic' => 'php-kafka-consumer-topic', '--consumer' => 'not-a-consumer', '--groupId' => 'test-group-id', '--commit' => '1', '--dlq' => 'php-kafka-consumer-topic-dlq', '--maxMessage' => 1,]);
     }
 
     public function tearDown(): void
