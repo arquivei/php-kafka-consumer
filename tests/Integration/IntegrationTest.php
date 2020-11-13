@@ -60,6 +60,28 @@ class IntegrationTest extends TestCase
         (new \Kafka\Consumer\Consumer($config))->consume();
 
         $this->assertEmpty(TestConsumer::$messages);
+
+        $config = new \Kafka\Consumer\Entities\Config(
+            new \Kafka\Consumer\Entities\Config\Sasl(
+                '',
+                '',
+                'PLAIN'
+            ),
+            [$topicName . '-dlq'],
+            env('KAFKA_BROKERS'),
+            1,
+            'test-group-id',
+            new TestConsumer(),
+            'PLAINTEXT',
+            $topicName . '-dlq-2',
+            1,
+            6
+        );
+
+        (new \Kafka\Consumer\Consumer($config))->consume();
+
+        $this->assertSame(1, count(TestConsumer::$messages));
+        $this->assertContains('Cest la vie', TestConsumer::$messages);
     }
 
     public function testMultipleMessages()
