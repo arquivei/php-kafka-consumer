@@ -123,6 +123,10 @@ class Consumer
             $message->payload,
             $this->config->getConsumer()->producerKey($message->payload)
         );
+
+        if (method_exists($this->producer, 'flush')) {
+            $this->producer->flush(12000);
+        }
     }
 
     private function commit(Message $message, bool $success): void
