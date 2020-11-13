@@ -1,33 +1,24 @@
 # php-kafka-consumer
 
-An Apache Kafka consumer in PHP
+An Apache Kafka consumer in PHP. Subscribe to topics and define callbacks to handle the messages.
+
+## Requirements
+
+In order to use this library, you'll need the [php-rdkafka](https://github.com/arnaud-lb/php-rdkafka) PECL extension.
+Please notice that the extension require the [librdkafka](https://github.com/edenhill/librdkafka) C library.
+
+Minimum requirements:
+
+| Dependency  | version |
+|-------------|---------|
+| librdkafka  | v1.5.0  |
+| PHP         | 7.2 +   |
+| ext-rdkafka | 3.0 +   |
+| Laravel     | 6 +     |
 
 ## Install
 
-1. Install [librdkafka c library](https://github.com/edenhill/librdkafka)
-
-    ```bash
-    $ cd /tmp
-    $ mkdir librdkafka
-    $ cd librdkafka
-    $ curl -L https://github.com/edenhill/librdkafka/archive/v1.0.0.tar.gz | tar xz
-    $ cd librdkafka-1.0.0
-    $ ./configure
-    $ make
-    $ make install
-    ```
-
-2. Install the [php-rdkafka](https://github.com/arnaud-lb/php-rdkafka) PECL extension
-
-    ```bash
-    $ pecl install rdkafka
-    ```
-
-3. Add the following to your php.ini file to enable the php-rdkafka extension
-
-    `extension=rdkafka.so`
-
-4. Install this package via composer using:
+Using composer:
 
     `composer require arquivei/php-kafka-consumer`
 
