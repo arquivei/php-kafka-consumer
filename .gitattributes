@@ -1,0 +1,10 @@
+/.github export-ignore
+/build export-ignore
+/dev export-ignore
+/tests export-ignore
+Dockefile export-ignore
+docker-compose.yaml export-ignore
+Makefile export-ignore
+phpunit.xml export-ignore
+start.sh export-ignore
+wait-for-it.sh export-ignore
