@@ -29,15 +29,16 @@
   },
   "archive": {
     "exclude": [
-      ".github/*",
-      "dev/*",
-      "build/*",
+      "/.github",
+      "/build",
+      "/dev",
+      "/tests",
       "Dockefile",
       "docker-compose.yaml",
       "Makefile",
+      "phpunit.xml",
       "start.sh",
-      "wait-for-it.sh",
-      "phpunit.xml"
+      "wait-for-it.sh"
     ]
   },
   "config": {
