@@ -1,5 +1,7 @@
 # php-kafka-consumer
 
+[![Latest Stable Version](https://poser.pugx.org/arquivei/php-kafka-consumer/v/stable)](https://packagist.org/packages/arquivei/php-kafka-consumer) [![Total Downloads](https://poser.pugx.org/arquivei/php-kafka-consumer/downloads)](https://packagist.org/packages/arquivei/php-kafka-consumer) ![Tests](https://github.com/arquivei/php-kafka-consumer/workflows/Test/badge.svg) ![Dependency coverage](https://github.com/arquivei/php-kafka-consumer/workflows/Version%20test/badge.svg)
+
 An Apache Kafka consumer in PHP. Subscribe to topics and define callbacks to handle the messages.
 
 ## Requirements
