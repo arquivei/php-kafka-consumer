@@ -13,7 +13,7 @@ Minimum requirements:
 
 | Dependency  | version |
 |-------------|---------|
-| librdkafka  | v1.5.0  |
+| librdkafka  | v1.5.2  |
 | PHP         | 7.2 +   |
 | ext-rdkafka | 3.0 +   |
 | Laravel     | 6 +     |
