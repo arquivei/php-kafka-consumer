@@ -1,4 +1,4 @@
-FROM joesantos386/laravel:php7.3-v1.5.0-4.0.3-8
+FROM joesantos386/laravel:php7.3-v1.5.2-3.1.3-6
 
 RUN apk add libzip-dev
 
@@ -8,7 +8,7 @@ RUN pecl install zip
 
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
-COPY build/composer-files/composer.json-8 /application/laravel-test/composer.json
+COPY build/composer-files/composer.json-6 /application/laravel-test/composer.json
 
 COPY tests /application/laravel-test/tests
 
