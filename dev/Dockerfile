@@ -1,4 +1,4 @@
-FROM joesantos386/laravel:php7.4-v1.5.0-4.0.3-8
+FROM joesantos386/laravel:php7.4-v1.5.2-4.0.4-8
 
 RUN apk add libzip-dev
 
