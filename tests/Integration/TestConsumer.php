@@ -2,9 +2,7 @@
 
 namespace Kafka\Consumer\Tests\Integration;
 
-use Kafka\Consumer\Contracts\Consumer;
-
-class TestConsumer extends Consumer
+class TestConsumer
 {
     public const RESPONSE_OK = 'response_ok';
     public const RESPONSE_ERROR = 'response_error';
@@ -20,7 +18,7 @@ class TestConsumer extends Consumer
         self::$callCounter = 0;
     }
 
-    public function handle(string $message): void
+    public function __invoke(string $message): void
     {
         if (!empty(self::$responses)) {
             $responseDirective = self::$responses[self::$callCounter++];

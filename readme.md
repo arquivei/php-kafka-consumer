@@ -31,10 +31,39 @@ Using composer:
 
 require_once 'vendor/autoload.php';
 
-use Kafka\Consumer\Entities\Config;
-use Kafka\Consumer\Contracts\Consumer;
+use Kafka\Consumer\ConsumerBuilder;
 use Kafka\Consumer\Entities\Config\Sasl;
-use Kafka\Consumer\Entities\Config\MaxAttempt;
+
+class DefaultConsumer
+{
+    public function __invoke(string $message): void
+    {
+        print 'Init: ' . date('Y-m-d H:i:s') . PHP_EOL;
+        sleep(2);
+        print 'Finish: ' . date('Y-m-d H:i:s') . PHP_EOL;
+    }
+}
+
+$consumer = ConsumerBuilder::create('broker:port', 'php-kafka-consumer-group-id', ['topic'])
+    ->withSasl(new Sasl('username', 'pasword', 'mechanisms'))
+    ->withCommitBatchSize(1)
+    ->withSecurityProtocol('security-protocol')
+    ->withHandler(new DefaultConsumer()) // or any callable
+    ->build();
+
+$consumer->consume();
+```
+
+Or by using the legacy API:
+
+```php
+<?php
+
+require_once 'vendor/autoload.php';
+
+use Kafka\Consumer\Contracts\Consumer;
+use Kafka\Consumer\Entities\Config;
+use Kafka\Consumer\Entities\Config\Sasl;
 
 class DefaultConsumer extends Consumer
 {
@@ -47,18 +76,24 @@ class DefaultConsumer extends Consumer
 }
 
 $config = new Config(
-    new Sasl('username', 'pasword', 'mechanisms'),
-    'topic',
+    new Sasl(
+        'username',
+        'password',
+        'mecahnisms'
+    ),
+    ['topic'],
     'broker:port',
     1,
     'php-kafka-consumer-group-id',
     new DefaultConsumer(),
-    new MaxAttempt(1),
-    'security-protocol'
+    'PLAINTEXT',
+    'topic-dlq',
+    1,
+    6
 );
 
-(new \Kafka\Consumer\Consumer($config))->consume();
-
+$consumer = new \Kafka\Consumer\Consumer($config);
+$consumer->consume();
 ```
 
 ## Usage with Laravel
@@ -86,6 +121,35 @@ Use the command to execute the consumer:
 
 ```bash
 $ php artisan arquivei:php-kafka-consumer --consumer="App\Consumers\YourConsumer" --commit=1
+```
+
+### Middlewares
+
+Middlewares are simple callables that receives two arguments: the message being handled and the
+next handler. Some possible use cases for middlewares: message transformation, filtering, logging stuff,
+or even transaction handling, your imagination is the limit.
+
+```php
+<?php
+
+use Kafka\Consumer\ConsumerBuilder;
+
+$consumer = ConsumerBuilder::create('broker:port', 'php-kafka-consumer-group-id', ['topic'])
+    ->withHandler(function ($message) {/** ... */})
+    // You may add any number of middlewares, they will be executed in the order provided
+    ->withMiddleware(function (string $rawMessage, callable $next): void {
+        $decoded = json_decode($rawMessage, true);
+        $next($decoded);
+    })
+    ->withMiddleware(function (array $message, callable $next): void {
+        if (! isset($message['foo'])) {
+            return;
+        }
+        $next($message);
+    })
+    ->build();
+
+$consumer->consume();
 ```
 
 ## Build and test

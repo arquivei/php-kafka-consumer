@@ -2,83 +2,36 @@
 
 namespace Kafka\Consumer\Tests\Integration;
 
-use Kafka\Consumer\Tests\Integration\TestConsumer;
+use Kafka\Consumer\ConsumerBuilder;
 use PHPUnit\Framework\TestCase;
 
 class IntegrationTest extends TestCase
 {
-    public function testSuccess()
+    public function testSuccess(): void
     {
         $topicName = 'php-kafka-consumer-topic';
         $this->sendMessage($topicName, 'Groundhog day');
 
-        $config = new \Kafka\Consumer\Entities\Config(
-            new \Kafka\Consumer\Entities\Config\Sasl(
-                '',
-                '',
-                'PLAIN'
-            ),
-            [$topicName],
-            env('KAFKA_BROKERS'),
-            1,
-            'test-group-id',
-            new TestConsumer(),
-            'PLAINTEXT',
-            $topicName . '-dlq',
-            1,
-            6
-        );
-
-        (new \Kafka\Consumer\Consumer($config))->consume();
+        $this->consumeMessages(1, $topicName, new TestConsumer());
 
         $this->assertSame(1, count(TestConsumer::$messages));
         $this->assertContains('Groundhog day', TestConsumer::$messages);
     }
 
-    public function testDlq()
+    public function testDlq(): void
     {
         $topicName = 'php-kafka-consumer-topic';
         $this->sendMessage($topicName, 'Cest la vie');
 
-        $config = new \Kafka\Consumer\Entities\Config(
-            new \Kafka\Consumer\Entities\Config\Sasl(
-                '',
-                '',
-                'PLAIN'
-            ),
-            [$topicName],
-            env('KAFKA_BROKERS'),
+        $this->consumeMessages(
             1,
-            'test-group-id',
-            new TestConsumer([TestConsumer::RESPONSE_ERROR, TestConsumer::RESPONSE_ERROR]),
-            'PLAINTEXT',
-            $topicName . '-dlq',
-            1,
-            6
+            $topicName,
+            new TestConsumer([TestConsumer::RESPONSE_ERROR, TestConsumer::RESPONSE_ERROR])
         );
-
-        (new \Kafka\Consumer\Consumer($config))->consume();
 
         $this->assertEmpty(TestConsumer::$messages);
 
-        $config = new \Kafka\Consumer\Entities\Config(
-            new \Kafka\Consumer\Entities\Config\Sasl(
-                '',
-                '',
-                'PLAIN'
-            ),
-            [$topicName . '-dlq'],
-            env('KAFKA_BROKERS'),
-            1,
-            'test-group-id',
-            new TestConsumer(),
-            'PLAINTEXT',
-            $topicName . '-dlq-2',
-            1,
-            6
-        );
-
-        (new \Kafka\Consumer\Consumer($config))->consume();
+        $this->consumeMessages(1, $topicName . '-dlq', new TestConsumer());
 
         $this->assertSame(1, count(TestConsumer::$messages));
         $this->assertContains('Cest la vie', TestConsumer::$messages);
@@ -92,24 +45,7 @@ class IntegrationTest extends TestCase
         $this->sendMessage($topicName, 'Believe when I say');
         $this->sendMessage($topicName, 'I want it that way');
 
-        $config = new \Kafka\Consumer\Entities\Config(
-            new \Kafka\Consumer\Entities\Config\Sasl(
-                '',
-                '',
-                'PLAIN'
-            ),
-            [$topicName],
-            env('KAFKA_BROKERS'),
-            1,
-            'test-group-id',
-            new TestConsumer(),
-            'PLAINTEXT',
-            $topicName . '-dlq',
-            4,
-            6
-        );
-
-        (new \Kafka\Consumer\Consumer($config))->consume();
+        $this->consumeMessages(4, $topicName, new TestConsumer());
 
         $this->assertSame(4, count(TestConsumer::$messages));
         $this->assertContains('You are my fire', TestConsumer::$messages);
@@ -136,5 +72,18 @@ class IntegrationTest extends TestCase
         if (method_exists($producer, 'flush')) {
             $producer->flush(12000);
         }
+    }
+
+    private function consumeMessages(int $numberOfMessages, string $topicName, callable $handler): void
+    {
+        $consumer = ConsumerBuilder::create(env('KAFKA_BROKERS'), 'test-group-id', [$topicName])
+            ->withCommitBatchSize(1)
+            ->withMaxCommitRetries(6)
+            ->withHandler($handler)
+            ->withDlq($topicName . '-dlq')
+            ->withMaxMessages($numberOfMessages)
+            ->build();
+
+        $consumer->consume();
     }
 }
