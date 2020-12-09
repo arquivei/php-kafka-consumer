@@ -25,16 +25,15 @@ class Retryable
         bool $exponentially = true
     ) {
         try {
-            $function();
+            return $function();
         } catch (Exception $exception) {
             if (in_array($exception->getCode(), $this->retryableErrors) && $currentRetries < $this->maximumRetries) {
                 $this->sleeper->sleep((int)($delayInSeconds * 1e6));
-                $this->retry(
+                return $this->retry(
                     $function,
                     ++$currentRetries,
                     $exponentially == true ? $delayInSeconds * 2 : $delayInSeconds
                 );
-                return;
             }
 
             throw $exception;

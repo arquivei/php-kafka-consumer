@@ -4,9 +4,11 @@ namespace Kafka\Consumer;
 
 use Kafka\Consumer\Commit\CommitterBuilder;
 use Kafka\Consumer\Commit\NativeSleeper;
-use Kafka\Consumer\Log\Logger;
 use Kafka\Consumer\Entities\Config;
+use Kafka\Consumer\Events\EventDispatcher;
+use Kafka\Consumer\Events\MessageHandled;
 use Kafka\Consumer\Exceptions\KafkaConsumerException;
+use Kafka\Consumer\Log\Logger;
 use Kafka\Consumer\Retry\Retryable;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
@@ -19,7 +21,8 @@ class Consumer
     private const IGNORABLE_CONSUME_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
         RD_KAFKA_RESP_ERR__TRANSPORT,
-        RD_KAFKA_RESP_ERR__TIMED_OUT
+        RD_KAFKA_RESP_ERR_NO_ERROR,
+        RD_KAFKA_RESP_ERR__TIMED_OUT,
     ];
 
     private const TIMEOUT_ERRORS = [
@@ -37,13 +40,15 @@ class Consumer
     private $messageCounter;
     private $committer;
     private $retryable;
+    private $eventDispatcher;
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, EventDispatcher $eventDispatcher = null)
     {
         $this->config = $config;
         $this->logger = new Logger();
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
+        $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
     }
 
     public function consume(): void
@@ -59,16 +64,24 @@ class Consumer
         $this->consumer->subscribe($this->config->getTopics());
 
         do {
-            $this->retryable->retry(function () {
-                $this->doConsume();
-            });
-        } while (!$this->isMaxMessage());
-    }
+            $message = $this->doConsume();
+            if (RD_KAFKA_RESP_ERR_NO_ERROR !== $message->err) {
+                continue;
+            }
 
-    private function doConsume()
-    {
-        $message = $this->consumer->consume(120000);
-        $this->handleMessage($message);
+            try {
+                $messageHandledEvent = new MessageHandled($message->payload);
+                $this->handleMessage($message);
+                $this->eventDispatcher->dispatch($messageHandledEvent);
+
+                if ($messageHandledEvent->shouldStopExecution()) {
+                    break;
+                }
+            } catch (Throwable $exception) {
+                $this->logger->error($message, $exception);
+                $this->handleException($exception, $message);
+            }
+        } while (!$this->isMaxMessage());
     }
 
     private function setConf(): Conf
@@ -92,36 +105,61 @@ class Consumer
         return $conf;
     }
 
-    private function executeMessage(Message $message): void
+    private function doConsume(): Message
+    {
+        return $this->retryable->retry(
+            function (): Message {
+                $message = $this->consumer->consume(120000);
+
+                if (!in_array($message->err, self::IGNORABLE_CONSUME_ERRORS)) {
+                    $this->logger->error($message, null, 'CONSUMER');
+                    throw new KafkaConsumerException($message->errstr(), $message->err);
+                }
+
+                return $message;
+            }
+        );
+    }
+
+    private function handleMessage(Message $message): void
+    {
+        $this->messageCounter->add();
+
+        $this->config->getConsumer()->handle($message->payload);
+        $this->commitMessage($message);
+    }
+
+    private function commitMessage(Message $message): void
     {
         try {
-            $this->config->getConsumer()->handle($message->payload);
-            $success = true;
+            $this->committer->commitMessage();
         } catch (Throwable $throwable) {
-            $this->logger->error($message, $throwable);
-            $success = $this->handleException($throwable, $message);
+            if (!in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS)) {
+                $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
+                throw $throwable;
+            }
         }
-
-        $this->commit($message, $success);
     }
 
     private function handleException(
         Throwable $exception,
         Message $message
-    ): bool
-    {
+    ): void {
         try {
             $this->config->getConsumer()->failed(
                 $message->payload,
                 $this->config->getTopics()[0],
                 $exception
             );
-            return true;
         } catch (Throwable $throwable) {
             if ($exception !== $throwable) {
                 $this->logger->error($message, $throwable, 'HANDLER_EXCEPTION');
             }
-            return false;
+
+            if (!is_null($this->config->getDlq())) {
+                $this->sendToDlq($message);
+                $this->commitDlq($message);
+            }
         }
     }
 
@@ -140,16 +178,10 @@ class Consumer
         }
     }
 
-    private function commit(Message $message, bool $success): void
+    private function commitDlq(Message $message): void
     {
         try {
-            if (!$success && !is_null($this->config->getDlq())) {
-                $this->sendToDlq($message);
-                $this->committer->commitDlq();
-                return;
-            }
-
-            $this->committer->commitMessage();
+            $this->committer->commitDlq();
         } catch (Throwable $throwable) {
             if (!in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS)) {
                 $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
@@ -161,19 +193,5 @@ class Consumer
     private function isMaxMessage(): bool
     {
         return $this->messageCounter->isMaxMessage();
-    }
-
-    private function handleMessage(Message $message): void
-    {
-        if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err) {
-            $this->messageCounter->add();
-            $this->executeMessage($message);
-            return;
-        }
-
-        if (!in_array($message->err, self::IGNORABLE_CONSUME_ERRORS)) {
-            $this->logger->error($message, null, 'CONSUMER');
-            throw new KafkaConsumerException($message->errstr(), $message->err);
-        }
     }
 }

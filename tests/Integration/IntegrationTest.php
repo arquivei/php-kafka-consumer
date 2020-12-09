@@ -3,6 +3,8 @@
 namespace Kafka\Consumer\Tests\Integration;
 
 use Kafka\Consumer\ConsumerBuilder;
+use Kafka\Consumer\Events\EventDispatcher;
+use Kafka\Consumer\Events\MessageHandled;
 use PHPUnit\Framework\TestCase;
 
 class IntegrationTest extends TestCase
@@ -37,7 +39,7 @@ class IntegrationTest extends TestCase
         $this->assertContains('Cest la vie', TestConsumer::$messages);
     }
 
-    public function testMultipleMessages()
+    public function testMultipleMessages(): void
     {
         $topicName = 'php-kafka-consumer-topic';
         $this->sendMessage($topicName, 'You are my fire');
@@ -52,6 +54,31 @@ class IntegrationTest extends TestCase
         $this->assertContains('The one desire', TestConsumer::$messages);
         $this->assertContains('Believe when I say', TestConsumer::$messages);
         $this->assertContains('I want it that way', TestConsumer::$messages);
+    }
+
+    public function testStopExecution(): void
+    {
+        $topicName = 'php-kafka-consumer-topic';
+        $this->sendMessage($topicName, 'You are my fire');
+        $this->sendMessage($topicName, 'The one desire');
+        $this->sendMessage($topicName, 'Stop execution');
+        $this->sendMessage($topicName, 'Believe when I say');
+        $this->sendMessage($topicName, 'I want it that way');
+
+        $this->consumeMessages(99, $topicName, new TestConsumer(), [
+            MessageHandled::class => function (MessageHandled $event) {
+                if ($event->getRawMessage() === 'Stop execution') {
+                    $event->stopExecution();
+                }
+            }
+        ]);
+
+        $this->assertSame(3, count(TestConsumer::$messages));
+        $this->assertContains('You are my fire', TestConsumer::$messages);
+        $this->assertContains('The one desire', TestConsumer::$messages);
+        $this->assertContains('Stop execution', TestConsumer::$messages);
+
+        $this->consumeMessages(2, $topicName, new TestConsumer());
     }
 
     private function sendMessage(string $topicName, string $msg)
@@ -74,15 +101,24 @@ class IntegrationTest extends TestCase
         }
     }
 
-    private function consumeMessages(int $numberOfMessages, string $topicName, callable $handler): void
-    {
-        $consumer = ConsumerBuilder::create(env('KAFKA_BROKERS'), 'test-group-id', [$topicName])
+    private function consumeMessages(
+        int $numberOfMessages,
+        string $topicName,
+        callable $handler,
+        array $subscribers = []
+    ): void {
+        $builder = ConsumerBuilder::create(env('KAFKA_BROKERS'), 'test-group-id', [$topicName])
             ->withCommitBatchSize(1)
             ->withMaxCommitRetries(6)
             ->withHandler($handler)
             ->withDlq($topicName . '-dlq')
-            ->withMaxMessages($numberOfMessages)
-            ->build();
+            ->withMaxMessages($numberOfMessages);
+
+        foreach ($subscribers as $event => $subscriber) {
+            $builder->withSubscriber($event, $subscriber);
+        }
+
+        $consumer = $builder->build();
 
         $consumer->consume();
     }

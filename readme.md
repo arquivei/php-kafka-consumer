@@ -96,6 +96,26 @@ $consumer = new \Kafka\Consumer\Consumer($config);
 $consumer->consume();
 ```
 
+## Events
+
+This lib dispatches some events, allowing you to listen to important events during the lifecycle of
+a message, or to hook custom logic.
+
+### MessageHandled
+
+This event is triggered right after a message is successfully handled, it also provides a hook to 
+stop message consumption, you just have to call the `stopExecution` method.
+
+```php
+<?php
+
+function handleEvent(\Kafka\Consumer\Events\MessageHandled $event): void {
+    // Do some logic with the event...
+    // Stops execution, the consuming loop will break and no new messages will be consumed.
+    $event->stopExecution();
+}
+```
+
 ## Usage with Laravel
 
 You need to add the `php-kafka-consig.php` in `config` path:

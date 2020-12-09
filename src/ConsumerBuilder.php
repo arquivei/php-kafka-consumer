@@ -8,6 +8,7 @@ use Closure;
 use InvalidArgumentException;
 use Kafka\Consumer\Entities\Config;
 use Kafka\Consumer\Entities\Config\Sasl;
+use Kafka\Consumer\Events\EventDispatcher;
 use Kafka\Consumer\MessageHandler\CallableConsumer;
 
 class ConsumerBuilder
@@ -23,6 +24,7 @@ class ConsumerBuilder
     private $saslConfig = null;
     private $dlq;
     private $securityProtocol;
+    private $subscribers;
 
     private function __construct(string $brokers, string $groupId, array $topics)
     {
@@ -43,6 +45,7 @@ class ConsumerBuilder
         $this->maxCommitRetries = 6;
         $this->middlewares = [];
         $this->securityProtocol = 'PLAINTEXT';
+        $this->subscribers = [];
     }
 
     public static function create(string $brokers, $groupId, array $topics): self
@@ -64,6 +67,19 @@ class ConsumerBuilder
     public function withHandler(callable $handler): self
     {
         $this->handler = Closure::fromCallable($handler);
+        return $this;
+    }
+
+    /**
+     * Adds an event subscriber
+     *
+     * @param string $event The full classified class name of the event
+     * @param callable $subscriber The callable that will handle the event
+     * @return $this
+     */
+    public function withSubscriber(string $event, callable $subscriber): self
+    {
+        $this->subscribers[$event][] = $subscriber;
         return $this;
     }
 
@@ -131,8 +147,16 @@ class ConsumerBuilder
             $this->maxCommitRetries
         );
 
+        $dispatcher = new EventDispatcher();
+        foreach ($this->subscribers as $event => $subscribers) {
+            foreach ($subscribers as $subscriber) {
+                $dispatcher->addSubscriber($event, $subscriber);
+            }
+        }
+
         return new Consumer(
-            $config
+            $config,
+            $dispatcher
         );
     }
 }
