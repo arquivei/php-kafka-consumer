@@ -19,7 +19,7 @@ class Config
     private $maxCommitRetries;
 
     public function __construct(
-        Sasl $sasl,
+        ?Sasl $sasl,
         array $topics,
         string $broker,
         int $commit,
@@ -42,7 +42,7 @@ class Config
         $this->maxCommitRetries = $maxCommitRetries;
     }
 
-    public function getSasl(): Sasl
+    public function getSasl(): ?Sasl
     {
         return $this->sasl;
     }

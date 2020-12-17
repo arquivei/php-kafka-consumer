@@ -11,13 +11,10 @@ use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer;
-use RdKafka\TopicConf;
 use Throwable;
 
 class Consumer
 {
-    private const MAX_COMMIT_RETRIES = 6;
-
     private const IGNORABLE_CONSUME_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
         RD_KAFKA_RESP_ERR__TIMED_OUT,
@@ -73,7 +70,7 @@ class Consumer
         $conf->set('bootstrap.servers', $this->config->getBroker());
         $conf->set('security.protocol', $this->config->getSecurityProtocol());
 
-        if ($this->config->isPlainText()) {
+        if ($this->config->isPlainText() && $this->config->getSasl() !== null) {
             $conf->set('sasl.username', $this->config->getSasl()->getUsername());
             $conf->set('sasl.password', $this->config->getSasl()->getPassword());
             $conf->set('sasl.mechanisms', $this->config->getSasl()->getMechanisms());
