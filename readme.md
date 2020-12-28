@@ -158,7 +158,7 @@ If you want to contribute, there are a few utilities that will help.
 
 First create a container:
 
-`docker-composer up -d --build`
+`docker-compose up -d --build`
 
 If you have make, you can use pre defined commands in the Makefile
 

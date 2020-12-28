@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kafka\Consumer\Commit;
 
+use Kafka\Consumer\Retry\Retryable;
 use RdKafka\Exception;
 
 /**
@@ -18,38 +19,25 @@ class RetryableCommitter implements Committer
     ];
 
     private $committer;
-    private $sleeper;
-    private $maximumRetries;
+    private $retryable;
 
     public function __construct(Committer $committer, Sleeper $sleeper, int $maximumRetries = 6)
     {
         $this->committer = $committer;
-        $this->sleeper = $sleeper;
-        $this->maximumRetries = $maximumRetries;
+        $this->retryable = new Retryable($sleeper, $maximumRetries, self::RETRYABLE_ERRORS);
     }
 
     public function commitMessage(): void
     {
-        $this->doCommit([$this->committer, 'commitMessage']);
+        $this->retryable->retry(function () {
+            $this->committer->commitMessage();
+        });
     }
 
     public function commitDlq(): void
     {
-        $this->doCommit([$this->committer, 'commitDlq']);
-    }
-
-    private function doCommit(callable $commitFunc, int $currentRetries = 0, int $timeToWait = 1)
-    {
-        try {
-            $commitFunc();
-        } catch (Exception $exception) {
-            if (in_array($exception->getCode(), self::RETRYABLE_ERRORS) && $currentRetries < $this->maximumRetries) {
-                $this->sleeper->sleep((int) ($timeToWait * 1e6));
-                $this->doCommit($commitFunc, ++$currentRetries, $timeToWait * 2);
-                return;
-            }
-
-            throw $exception;
-        }
+        $this->retryable->retry(function () {
+            $this->committer->commitDlq();
+        });
     }
 }

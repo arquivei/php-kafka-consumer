@@ -7,6 +7,7 @@ use Kafka\Consumer\Commit\NativeSleeper;
 use Kafka\Consumer\Log\Logger;
 use Kafka\Consumer\Entities\Config;
 use Kafka\Consumer\Exceptions\KafkaConsumerException;
+use Kafka\Consumer\Retry\Retryable;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
@@ -17,9 +18,12 @@ class Consumer
 {
     private const IGNORABLE_CONSUME_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
+        RD_KAFKA_RESP_ERR__TRANSPORT,
+    ];
+
+    private const TIMEOUT_ERRORS = [
         RD_KAFKA_RESP_ERR__TIMED_OUT,
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
-        RD_KAFKA_RESP_ERR__TRANSPORT,
     ];
 
     private const IGNORABLE_COMMIT_ERRORS = [
@@ -32,12 +36,14 @@ class Consumer
     private $producer;
     private $messageCounter;
     private $committer;
+    private $retryable;
 
     public function __construct(Config $config)
     {
         $this->config = $config;
         $this->logger = new Logger();
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
+        $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
     }
 
     public function consume(): void
@@ -53,9 +59,16 @@ class Consumer
         $this->consumer->subscribe($this->config->getTopics());
 
         do {
-            $message = $this->consumer->consume(120000);
-            $this->handleMessage($message);
+            $this->retryable->retry(function () {
+                $this->doConsume();
+            });
         } while (!$this->isMaxMessage());
+    }
+
+    private function doConsume()
+    {
+        $message = $this->consumer->consume(120000);
+        $this->handleMessage($message);
     }
 
     private function setConf(): Conf
@@ -95,7 +108,8 @@ class Consumer
     private function handleException(
         Throwable $exception,
         Message $message
-    ): bool {
+    ): bool
+    {
         try {
             $this->config->getConsumer()->failed(
                 $message->payload,
