@@ -19,10 +19,10 @@ class Consumer
     private const IGNORABLE_CONSUME_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
         RD_KAFKA_RESP_ERR__TRANSPORT,
+        RD_KAFKA_RESP_ERR__TIMED_OUT
     ];
 
     private const TIMEOUT_ERRORS = [
-        RD_KAFKA_RESP_ERR__TIMED_OUT,
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
 
