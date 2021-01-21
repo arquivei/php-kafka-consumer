@@ -34,10 +34,13 @@ services:
     networks:
       - app-test
 
-  test-16:
+  test:
     build:
       context: .
-      dockerfile: build/test/Dockerfile:php7.4-v1.5.2-3.0.5-6
+      dockerfile: build/test/Dockerfile
+      args:
+        TAG: 8.0-v1.5.3-5.0.0-8
+        LARAVEL_VERSION: 8
     entrypoint: /application/php-kafka-consumer/start.sh
     networks:
       - app-test
