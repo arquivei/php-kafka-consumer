@@ -48,8 +48,8 @@ class Consumer
 
     public function consume(): void
     {
-        $this->consumer = new KafkaConsumer($this->setConf());
-        $this->producer = new Producer($this->setConf());
+        $this->consumer = new KafkaConsumer($this->setConsumerConf());
+        $this->producer = new Producer($this->setProducerConf());
 
         $this->committer = CommitterBuilder::withConsumer($this->consumer)
             ->andRetry(new NativeSleeper(), $this->config->getMaxCommitRetries())
@@ -71,15 +71,30 @@ class Consumer
         $this->handleMessage($message);
     }
 
-    private function setConf(): Conf
+    private function setConsumerConf(): Conf
     {
         $conf = new Conf();
         $conf->set('auto.offset.reset', 'smallest');
         $conf->set('queued.max.messages.kbytes', '10000');
         $conf->set('enable.auto.commit', 'false');
-        $conf->set('compression.codec', 'gzip');
         $conf->set('max.poll.interval.ms', '86400000');
         $conf->set('group.id', $this->config->getGroupId());
+        $conf->set('bootstrap.servers', $this->config->getBroker());
+        $conf->set('security.protocol', $this->config->getSecurityProtocol());
+
+        if ($this->config->isPlainText() && $this->config->getSasl() !== null) {
+            $conf->set('sasl.username', $this->config->getSasl()->getUsername());
+            $conf->set('sasl.password', $this->config->getSasl()->getPassword());
+            $conf->set('sasl.mechanisms', $this->config->getSasl()->getMechanisms());
+        }
+
+        return $conf;
+    }
+
+    private function setProducerConf(): Conf
+    {
+        $conf = new Conf();
+        $conf->set('compression.codec', 'gzip');
         $conf->set('bootstrap.servers', $this->config->getBroker());
         $conf->set('security.protocol', $this->config->getSecurityProtocol());
 
