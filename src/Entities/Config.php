@@ -17,6 +17,8 @@ class Config
     private $maxMessages;
     private $securityProtocol;
     private $maxCommitRetries;
+    private $autoCommit;
+    private $customOptions;
 
     public function __construct(
         ?Sasl $sasl,
@@ -28,7 +30,9 @@ class Config
         string $securityProtocol,
         ?string $dlq,
         int $maxMessages = -1,
-        int $maxCommitRetries = 6
+        int $maxCommitRetries = 6,
+        bool $autoCommit = false,
+        array $customOptions = []
     ) {
         $this->dlq = $dlq;
         $this->sasl = $sasl;
@@ -40,21 +44,8 @@ class Config
         $this->maxMessages = $maxMessages;
         $this->securityProtocol = $securityProtocol;
         $this->maxCommitRetries = $maxCommitRetries;
-    }
-
-    public function getSasl(): ?Sasl
-    {
-        return $this->sasl;
-    }
-
-    public function getTopics(): array
-    {
-        return $this->topics;
-    }
-
-    public function getBroker(): string
-    {
-        return $this->broker;
+        $this->autoCommit = $autoCommit;
+        $this->customOptions = $customOptions;
     }
 
     public function getCommit(): int
@@ -62,24 +53,19 @@ class Config
         return $this->commit;
     }
 
-    public function getGroupId(): string
+    public function getMaxCommitRetries(): int
     {
-        return $this->groupId;
+        return $this->maxCommitRetries;
+    }
+
+    public function getTopics(): array
+    {
+        return $this->topics;
     }
 
     public function getConsumer(): Consumer
     {
         return $this->consumer;
-    }
-
-    public function getSecurityProtocol(): string
-    {
-        return $this->securityProtocol;
-    }
-
-    public function isPlainText(): bool
-    {
-        return $this->securityProtocol == 'SASL_PLAINTEXT';
     }
 
     public function getDlq(): ?string
@@ -92,8 +78,57 @@ class Config
         return $this->maxMessages;
     }
 
-    public function getMaxCommitRetries(): int
+    public function isAutoCommit(): bool
     {
-        return $this->maxCommitRetries;
+        return $this->autoCommit;
+    }
+
+    public function getConsumerOptions(): array
+    {
+        $options = [
+            'auto.offset.reset' => 'smallest',
+            'queued.max.messages.kbytes' => '10000',
+            'enable.auto.commit' => 'false',
+            'compression.codec' => 'gzip',
+            'max.poll.interval.ms' => '86400000',
+            'group.id' => $this->groupId,
+            'bootstrap.servers' => $this->broker,
+            'security.protocol' => $this->securityProtocol,
+        ];
+
+        if ($this->autoCommit) {
+            $options['enable.auto.commit'] = 'true';
+        }
+
+        return array_merge($options, $this->getSaslOptions(), $this->customOptions);
+    }
+
+    public function getProducerOptions(): array
+    {
+        $config = [
+            'compression.codec' => 'gzip',
+            'bootstrap.servers' => $this->broker,
+            'security.protocol' => $this->securityProtocol,
+        ];
+
+        return array_merge($config, $this->getSaslOptions());
+    }
+
+    private function getSaslOptions(): array
+    {
+        if ($this->isPlainText() && $this->sasl !== null) {
+            return [
+                'sasl.username' => $this->sasl->getUsername(),
+                'sasl.password' => $this->sasl->getPassword(),
+                'sasl.mechanisms' => $this->sasl->getMechanisms(),
+            ];
+        }
+
+        return [];
+    }
+
+    private function isPlainText(): bool
+    {
+        return $this->securityProtocol == 'SASL_PLAINTEXT';
     }
 }

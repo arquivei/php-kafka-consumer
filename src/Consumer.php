@@ -2,7 +2,7 @@
 
 namespace Kafka\Consumer;
 
-use Kafka\Consumer\Commit\CommitterBuilder;
+use Kafka\Consumer\Commit\CommitterFactory;
 use Kafka\Consumer\Commit\NativeSleeper;
 use Kafka\Consumer\Log\Logger;
 use Kafka\Consumer\Entities\Config;
@@ -37,6 +37,7 @@ class Consumer
     private $messageCounter;
     private $committer;
     private $retryable;
+    private $committerFactory;
 
     public function __construct(Config $config)
     {
@@ -44,17 +45,17 @@ class Consumer
         $this->logger = new Logger();
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
+        $this->committerFactory = new CommitterFactory(
+            $this->messageCounter
+        );
     }
 
     public function consume(): void
     {
-        $this->consumer = new KafkaConsumer($this->setConsumerConf());
-        $this->producer = new Producer($this->setProducerConf());
+        $this->consumer = new KafkaConsumer($this->setConf($this->config->getConsumerOptions()));
+        $this->producer = new Producer($this->setConf($this->config->getProducerOptions()));
 
-        $this->committer = CommitterBuilder::withConsumer($this->consumer)
-            ->andRetry(new NativeSleeper(), $this->config->getMaxCommitRetries())
-            ->committingInBatches($this->messageCounter, $this->config->getCommit())
-            ->build();
+        $this->committer = $this->committerFactory->make($this->consumer, $this->config);
 
         $this->consumer->subscribe($this->config->getTopics());
 
@@ -71,37 +72,12 @@ class Consumer
         $this->handleMessage($message);
     }
 
-    private function setConsumerConf(): Conf
+    public function setConf(array $options): Conf
     {
         $conf = new Conf();
-        $conf->set('auto.offset.reset', 'smallest');
-        $conf->set('queued.max.messages.kbytes', '10000');
-        $conf->set('enable.auto.commit', 'false');
-        $conf->set('max.poll.interval.ms', '86400000');
-        $conf->set('group.id', $this->config->getGroupId());
-        $conf->set('bootstrap.servers', $this->config->getBroker());
-        $conf->set('security.protocol', $this->config->getSecurityProtocol());
 
-        if ($this->config->isPlainText() && $this->config->getSasl() !== null) {
-            $conf->set('sasl.username', $this->config->getSasl()->getUsername());
-            $conf->set('sasl.password', $this->config->getSasl()->getPassword());
-            $conf->set('sasl.mechanisms', $this->config->getSasl()->getMechanisms());
-        }
-
-        return $conf;
-    }
-
-    private function setProducerConf(): Conf
-    {
-        $conf = new Conf();
-        $conf->set('compression.codec', 'gzip');
-        $conf->set('bootstrap.servers', $this->config->getBroker());
-        $conf->set('security.protocol', $this->config->getSecurityProtocol());
-
-        if ($this->config->isPlainText() && $this->config->getSasl() !== null) {
-            $conf->set('sasl.username', $this->config->getSasl()->getUsername());
-            $conf->set('sasl.password', $this->config->getSasl()->getPassword());
-            $conf->set('sasl.mechanisms', $this->config->getSasl()->getMechanisms());
+        foreach ($options as $key => $value) {
+            $conf->set($key, $value);
         }
 
         return $conf;

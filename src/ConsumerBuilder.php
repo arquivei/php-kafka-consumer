@@ -23,6 +23,8 @@ class ConsumerBuilder
     private $saslConfig = null;
     private $dlq;
     private $securityProtocol;
+    private $autoCommit;
+    private $options;
 
     private function __construct(string $brokers, string $groupId, array $topics)
     {
@@ -43,6 +45,8 @@ class ConsumerBuilder
         $this->maxCommitRetries = 6;
         $this->middlewares = [];
         $this->securityProtocol = 'PLAINTEXT';
+        $this->autoCommit = false;
+        $this->options = [];
     }
 
     public static function create(string $brokers, $groupId, array $topics): self
@@ -116,6 +120,27 @@ class ConsumerBuilder
         return $this;
     }
 
+    public function withAutoCommit(): self
+    {
+        $this->autoCommit = true;
+        return $this;
+    }
+
+    public function withOptions(array $options): self
+    {
+        foreach ($options as $name => $value) {
+            $this->withOption($name, $value);
+        }
+
+        return $this;
+    }
+
+    public function withOption(string $name, string $value): self
+    {
+        $this->options[$name] = $value;
+        return $this;
+    }
+
     public function build(): Consumer
     {
         $config = new Config(
@@ -128,7 +153,9 @@ class ConsumerBuilder
             $this->securityProtocol,
             $this->dlq,
             $this->maxMessages,
-            $this->maxCommitRetries
+            $this->maxCommitRetries,
+            $this->autoCommit,
+            $this->options
         );
 
         return new Consumer(
