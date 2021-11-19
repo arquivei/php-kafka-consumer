@@ -37,7 +37,7 @@ class Options
 
     public function getGroupId(): string
     {
-        return (is_string($this->groupId) && strlen($this->groupId) > 1) ? $this->groupId : $this->config['groupId'];
+        return $this->groupId;
     }
 
     public function getCommit(): ?string
