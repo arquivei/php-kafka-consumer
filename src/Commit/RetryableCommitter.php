@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kafka\Consumer\Commit;
 
 use Kafka\Consumer\Retry\Retryable;
-use RdKafka\Exception;
 
 /**
  * Decorates a committer with retry logic
