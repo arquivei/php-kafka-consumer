@@ -5,6 +5,7 @@ networks:
 services:
   zookeeper-test:
     image: 'bitnami/zookeeper:latest'
+    restart: always
     networks:
       - app-test
     ports:
@@ -14,6 +15,7 @@ services:
 
   kafka-test:
     image: 'bitnami/kafka:latest'
+    restart: always
     ports:
       - '9094:9092'
       - '9095:9093'
