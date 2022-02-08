@@ -7,14 +7,14 @@ An Apache Kafka consumer in PHP. Subscribe to topics and define callbacks to han
 ## Requirements
 
 In order to use this library, you'll need the [php-rdkafka](https://github.com/arnaud-lb/php-rdkafka) PECL extension.
-Please notice that the extension require the [librdkafka](https://github.com/edenhill/librdkafka) C library.
+Please notice that the extension requires the [librdkafka](https://github.com/edenhill/librdkafka) C library.
 
 Minimum requirements:
 
 | Dependency  | version |
 |-------------|---------|
 | librdkafka  | v1.5.3  |
-| PHP         | 7.3 +   |
+| PHP         | 7.4 +   |
 | ext-rdkafka | 3.0 +   |
 | Laravel     | 6 +     |
 
@@ -22,7 +22,7 @@ Minimum requirements:
 
 Using composer:
 
-    `composer require arquivei/php-kafka-consumer`
+`composer require arquivei/php-kafka-consumer`
 
 ## Usage
 
@@ -79,7 +79,7 @@ $config = new Config(
     new Sasl(
         'username',
         'password',
-        'mecahnisms'
+        'mechanisms'
     ),
     ['topic'],
     'broker:port',
@@ -125,7 +125,7 @@ $ php artisan arquivei:php-kafka-consumer --consumer="App\Consumers\YourConsumer
 
 ### Middlewares
 
-Middlewares are simple callables that receives two arguments: the message being handled and the
+Middlewares are simple callables that receive two arguments: the message being handled and the
 next handler. Some possible use cases for middlewares: message transformation, filtering, logging stuff,
 or even transaction handling, your imagination is the limit.
 
