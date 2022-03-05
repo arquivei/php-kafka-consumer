@@ -1,14 +1,8 @@
 ARG TAG
 
-FROM joesantos386/laravel:${TAG}
+FROM arquivei/php-kafka-consumer:${TAG}
 
 ARG LARAVEL_VERSION
-
-RUN apk add libzip-dev
-
-RUN apk add unzip
-
-RUN pecl install zip
 
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
