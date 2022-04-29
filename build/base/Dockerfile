@@ -26,7 +26,7 @@ RUN apk update && \
     apk add libzip-dev unzip && \
     pecl install zip
 
-COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 RUN composer global require laravel/installer
 
