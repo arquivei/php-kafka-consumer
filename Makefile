@@ -38,8 +38,12 @@ integration-coverage:
 	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/php-kafka-consumer/src --coverage-html /application/php-kafka-consumer/coverage --filter Integration
 
 version-test-%:
-	@$(eval TAG = $(@:version-test-%=%))
-	@$(eval LARAVEL_VERSION=$(shell echo ${TAG} | cut -c18))
-	@docker-compose -f docker-compose-test.yaml build --build-arg TAG=${TAG} --build-arg LARAVEL_VERSION=${LARAVEL_VERSION}
+	@$(eval LARAVEL_VERSION=$(@:version-test-%=%))
+	@docker-compose -f docker-compose-test.yaml build --build-arg PHP_VERSION=${TAG} --build-arg LARAVEL_VERSION=${LARAVEL_VERSION}
+	@docker-compose -f docker-compose-test.yaml up -d
+	@docker-compose -f docker-compose-test.yaml exec -T test ./vendor/phpunit/phpunit/phpunit tests
+
+version-test-latest:
+	@docker-compose -f docker-compose-test.yaml build
 	@docker-compose -f docker-compose-test.yaml up -d
 	@docker-compose -f docker-compose-test.yaml exec -T test ./vendor/phpunit/phpunit/phpunit tests
