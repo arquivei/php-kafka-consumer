@@ -15,7 +15,6 @@ services:
 
   kafka-test:
     image: 'bitnami/kafka:latest'
-    restart: always
     ports:
       - '9094:9092'
       - '9095:9093'
@@ -41,8 +40,10 @@ services:
       context: .
       dockerfile: build/test/Dockerfile
       args:
-        TAG: 8.0-v1.6.1-5.0.0-8
-        LARAVEL_VERSION: 8
+        PHP_VERSION: 8.0.18
+        LARAVEL_VERSION: 9
+        LIBRDKAFKA_VERSION: v1.8.2
+        EXT_RDKAFKA_VERSION: 6.0.1
     entrypoint: /application/php-kafka-consumer/start.sh
     networks:
       - app-test
