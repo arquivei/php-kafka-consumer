@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: [ 7.4 ]
+        php: [ 7.4, 8, 9 ]
         librdkafka: [ v1.8.2 ]
-        extrdkafka: [ 3.0.5, 3.1.2, 4.0.4, 4.1.2, 5.0.2 ]
-        laravel: [ 6, 7, 8 ]
+        extrdkafka: [ 4, 5, 6 ]
+        laravel: [ 6, 8, 9 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
