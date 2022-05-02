@@ -43,3 +43,8 @@ version-test-%:
 	@docker-compose -f docker-compose-test.yaml build --build-arg TAG=${TAG} --build-arg LARAVEL_VERSION=${LARAVEL_VERSION}
 	@docker-compose -f docker-compose-test.yaml up -d
 	@docker-compose -f docker-compose-test.yaml exec -T test ./vendor/phpunit/phpunit/phpunit tests
+
+test-latest:
+	@docker-compose -f docker-compose-test.yaml build --no-cache
+	@docker-compose -f docker-compose-test.yaml up -d
+	@docker-compose -f docker-compose-test.yaml exec -T test ./vendor/phpunit/phpunit/phpunit tests
