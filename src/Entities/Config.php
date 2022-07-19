@@ -19,6 +19,7 @@ class Config
     private $maxCommitRetries;
     private $autoCommit;
     private $customOptions;
+    private $printConfigs;
 
     public function __construct(
         ?Sasl $sasl,
@@ -32,7 +33,8 @@ class Config
         int $maxMessages = -1,
         int $maxCommitRetries = 6,
         bool $autoCommit = false,
-        array $customOptions = []
+        array $customOptions = [],
+        bool $printConfigs = false
     ) {
         $this->dlq = $dlq;
         $this->sasl = $sasl;
@@ -46,6 +48,7 @@ class Config
         $this->maxCommitRetries = $maxCommitRetries;
         $this->autoCommit = $autoCommit;
         $this->customOptions = $customOptions;
+        $this->printConfigs = $printConfigs;
     }
 
     public function getCommit(): int
@@ -112,6 +115,11 @@ class Config
         ];
 
         return array_merge($config, $this->getSaslOptions());
+    }
+
+    public function getPrintConfigs(): bool
+    {
+        return $this->printConfigs;
     }
 
     private function getSaslOptions(): array

@@ -52,6 +52,10 @@ class Consumer
 
     public function consume(): void
     {
+        if($this->config->getPrintConfigs()) {
+            $this->printConsumerConfigs();
+        }
+        
         $this->consumer = new KafkaConsumer($this->setConf($this->config->getConsumerOptions()));
         $this->producer = new Producer($this->setConf($this->config->getProducerOptions()));
 
@@ -64,6 +68,30 @@ class Consumer
                 $this->doConsume();
             });
         } while (!$this->isMaxMessage());
+    }
+
+    private function printConsumerConfigs() {
+        echo PHP_EOL;
+        echo "\e[0;30;42m ++++++++++++++++++ CONSUMER CONFIGS ++++++++++++++++++\e[0m\n";
+        echo PHP_EOL;
+
+        $mask = "\e[0;32m%26s | %s \e[0m\n";
+        printf($mask, 'CONFIG', 'VALUE');
+
+        $mask = "%26s | %s \n";
+        printf($mask, 'topics', implode(', ', $this->config->getTopics()));
+        printf($mask, 'dlq', $this->config->getDlq());
+        printf($mask, 'commit', $this->config->getCommit());
+        printf($mask, 'maxCommitRetries', $this->config->getMaxCommitRetries());
+        printf($mask, 'maxMessages', $this->config->getMaxMessages());
+
+        foreach ($this->config->getConsumerOptions() as $key => $value) {
+            if($key !== 'sasl.username' && $key !== 'sasl.password') {
+                printf($mask, $key, $value);
+            }
+        }
+
+        echo PHP_EOL;
     }
 
     private function doConsume()

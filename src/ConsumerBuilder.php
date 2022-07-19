@@ -25,6 +25,7 @@ class ConsumerBuilder
     private $securityProtocol;
     private $autoCommit;
     private $options;
+    private $printConfigs;
 
     private function __construct(string $brokers, string $groupId, array $topics)
     {
@@ -47,6 +48,7 @@ class ConsumerBuilder
         $this->securityProtocol = 'PLAINTEXT';
         $this->autoCommit = false;
         $this->options = [];
+        $this->printConfigs = false;
     }
 
     public static function create(string $brokers, $groupId, array $topics): self
@@ -141,6 +143,12 @@ class ConsumerBuilder
         return $this;
     }
 
+    public function withPrintConfigs(bool $printConfigs): self
+    {
+        $this->printConfigs = $printConfigs;
+        return $this;
+    }
+
     public function build(): Consumer
     {
         $config = new Config(
@@ -155,7 +163,8 @@ class ConsumerBuilder
             $this->maxMessages,
             $this->maxCommitRetries,
             $this->autoCommit,
-            $this->options
+            $this->options,
+            $this->printConfigs
         );
 
         return new Consumer(
