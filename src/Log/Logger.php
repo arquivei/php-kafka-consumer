@@ -18,7 +18,7 @@ class Logger
         $this->logger = new \Monolog\Logger('PHP-KAFKA-CONSUMER-ERROR');
         $this->logger->pushHandler($handler);
         $this->logger->pushProcessor(function ($record) {
-            $record['datetime'] = $record['datetime']->format('c');
+            $record['formatted'] = $record['datetime']->format('c');
             return $record;
         });
     }
