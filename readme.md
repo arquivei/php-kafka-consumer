@@ -158,7 +158,7 @@ If you want to contribute, there are a few utilities that will help.
 
 First create a container:
 
-`docker-compose up -d --build`
+`docker compose up -d --build`
 
 If you have make, you can use pre defined commands in the Makefile
 
@@ -166,7 +166,7 @@ If you have make, you can use pre defined commands in the Makefile
 
 Then install the dependencies:
 
-`docker-compose exec php-fpm composer install`
+`docker compose exec php-fpm composer install`
 
 or with make:
 
@@ -174,7 +174,7 @@ or with make:
 
 You can run tests locally:
 
-`docker-compose exec php-fpm ./vendor/phpunit/phpunit/phpunit tests`
+`docker compose exec php-fpm ./vendor/phpunit/phpunit/phpunit tests`
 
 or with make:
 
@@ -182,7 +182,7 @@ or with make:
 
 and check for coverage:
 
-`docker-compose exec php-fpm phpdbg -qrr ./vendor/bin/phpunit --whitelist src/ --coverage-html coverage/`
+`docker compose exec php-fpm phpdbg -qrr ./vendor/bin/phpunit --whitelist src/ --coverage-html coverage/`
 
 or with make:
 
