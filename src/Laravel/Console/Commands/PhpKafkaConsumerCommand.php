@@ -40,7 +40,10 @@ class PhpKafkaConsumerCommand extends Command
             new $consumer(),
             $this->config['securityProtocol'],
             $options->getDlq(),
-            $options->getMaxMessage()
+            $options->getMaxMessage(),
+            6,
+            false,
+            $this->config['customOptions'] ?? [],
         );
 
         (new \Kafka\Consumer\Consumer($config))->consume();
