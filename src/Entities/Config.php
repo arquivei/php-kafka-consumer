@@ -114,7 +114,7 @@ class Config
             'security.protocol' => $this->securityProtocol,
         ];
 
-        return array_merge($config, $this->getSaslOptions());
+        return array_merge($config, $this->getSaslOptions(), $this->customOptions);
     }
 
     public function getPrintConfigs(): bool
@@ -137,6 +137,10 @@ class Config
 
     private function isPlainText(): bool
     {
-        return $this->securityProtocol == 'SASL_PLAINTEXT';
+        $mechanisms = "";
+        if ($this->sasl !== null) {
+            $mechanisms = $this->sasl->getMechanisms();
+        }
+        return $this->securityProtocol == 'SASL_PLAINTEXT' || $mechanisms == "PLAIN";
     }
 }
