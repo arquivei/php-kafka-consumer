@@ -52,6 +52,7 @@ class Options
 
     public function getMaxMessage(): int
     {
-        return (is_int($this->maxMessage) && $this->maxMessage >= 1) ? $this->maxMessage : -1;
+        $maxMessage = (int)$this->maxMessage;
+        return $maxMessage >= 1 ? $maxMessage : -1;
     }
 }
