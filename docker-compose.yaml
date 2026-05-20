@@ -1,34 +1,30 @@
 version: "3.7"
+
 networks:
   app-tier:
     driver: bridge
+
 services:
   zookeeper-test:
     image: 'bitnamilegacy/zookeeper:latest'
     networks:
       - app-tier
-    ports:
-      - '2181:2181'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
 
   kafka-test:
-    image: 'bitnamilegacy/kafka:latest'
+    image: 'confluentinc/cp-kafka:7.4.0'
     ports:
       - '9092:9092'
-      - '9093:9093'
     environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_LISTENERS=CLIENT://:9092
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-test:9092
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper-test:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka-test:9092,EXTERNAL://localhost:9093
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
-      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-test:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-test:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     depends_on:
       - zookeeper-test
     networks:
@@ -40,7 +36,7 @@ services:
       dockerfile: dev/Dockerfile
     entrypoint: /application/php-kafka-consumer/start.sh
     environment:
-      KAFKA_BROKERS: kafka-test:9092
+      KAFKA_BROKERS: kafka-test:29092
     volumes:
       - .:/application/php-kafka-consumer
       - ./tests:/application/laravel-test/tests
