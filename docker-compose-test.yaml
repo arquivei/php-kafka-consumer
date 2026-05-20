@@ -4,7 +4,7 @@ networks:
     driver: bridge
 services:
   zookeeper-test:
-    image: 'bitnami/zookeeper:latest'
+    image: 'bitnamilegacy/zookeeper:latest'
     restart: always
     networks:
       - app-test
@@ -14,7 +14,7 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
 
   kafka-test:
-    image: 'bitnami/kafka:latest'
+    image: 'bitnamilegacy/kafka:latest'
     restart: always
     ports:
       - '9094:9092'
